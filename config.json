@@ -59,7 +59,7 @@
         }
       ],
       "network_config": {
-        "base_url": "env.DEEPSEEK_BASE_URL",
+        "base_url": "https://api.deepseek.com/v1",
         "default_request_timeout_in_seconds": 60,
         "max_retries": 1,
         "retry_backoff_initial_ms": 100,
@@ -91,7 +91,7 @@
         }
       ],
       "network_config": {
-        "base_url": "env.KIMI_BASE_URL",
+        "base_url": "https://api.moonshot.cn/v1",
         "default_request_timeout_in_seconds": 60,
         "max_retries": 1,
         "retry_backoff_initial_ms": 100,
@@ -113,5 +113,143 @@
         }
       }
     }
+  },
+  "governance": {
+    "routing_rules": [
+      {
+        "id": "rr-vision-quality-think",
+        "name": "vision-quality-think",
+        "description": "Vision + quality + think -> Kimi (primary), OpenAI (fallback)",
+        "enabled": true,
+        "cel_expression": "headers[\"x-modality\"] == \"vision\" && headers[\"x-tier\"] == \"quality\" && headers[\"x-reasoning\"] == \"think\"",
+        "targets": [
+          { "provider": "kimi", "model": "kimi-k2-thinking", "weight": 1 }
+        ],
+        "fallbacks": ["openai/o3", "openai/o1"],
+        "scope": "global",
+        "priority": 10
+      },
+      {
+        "id": "rr-vision-quality-fast",
+        "name": "vision-quality-fast",
+        "description": "Vision + quality + fast -> Kimi (primary), OpenAI (fallback)",
+        "enabled": true,
+        "cel_expression": "headers[\"x-modality\"] == \"vision\" && headers[\"x-tier\"] == \"quality\" && headers[\"x-reasoning\"] == \"fast\"",
+        "targets": [
+          { "provider": "kimi", "model": "kimi-k2.5", "weight": 1 }
+        ],
+        "fallbacks": ["openai/o3", "openai/o1"],
+        "scope": "global",
+        "priority": 11
+      },
+      {
+        "id": "rr-vision-research",
+        "name": "vision-research",
+        "description": "Vision + research -> OpenRouter Grok (primary), Claude 3.5 Sonnet (fallback)",
+        "enabled": true,
+        "cel_expression": "headers[\"x-modality\"] == \"vision\" && headers[\"x-tier\"] == \"research\"",
+        "targets": [
+          { "provider": "openrouter", "model": "x-ai/grok-4.20", "weight": 1 }
+        ],
+        "fallbacks": ["openrouter/anthropic/claude-3.5-sonnet"],
+        "scope": "global",
+        "priority": 12
+      },
+      {
+        "id": "rr-vision-economy",
+        "name": "vision-economy",
+        "description": "Vision + economy -> Kimi (economy vision safe)",
+        "enabled": true,
+        "cel_expression": "headers[\"x-modality\"] == \"vision\" && headers[\"x-tier\"] == \"economy\"",
+        "targets": [
+          { "provider": "kimi", "model": "kimi-k2.5", "weight": 1 }
+        ],
+        "fallbacks": ["openai/o3", "openai/o1"],
+        "scope": "global",
+        "priority": 13
+      },
+      {
+        "id": "rr-text-economy-fast",
+        "name": "text-economy-fast",
+        "description": "Text + economy + fast -> DeepSeek chat",
+        "enabled": true,
+        "cel_expression": "headers[\"x-modality\"] == \"text\" && headers[\"x-tier\"] == \"economy\" && headers[\"x-reasoning\"] == \"fast\"",
+        "targets": [
+          { "provider": "deepseek", "model": "deepseek-chat", "weight": 1 }
+        ],
+        "scope": "global",
+        "priority": 20
+      },
+      {
+        "id": "rr-text-economy-think",
+        "name": "text-economy-think",
+        "description": "Text + economy + think -> DeepSeek reasoner",
+        "enabled": true,
+        "cel_expression": "headers[\"x-modality\"] == \"text\" && headers[\"x-tier\"] == \"economy\" && headers[\"x-reasoning\"] == \"think\"",
+        "targets": [
+          { "provider": "deepseek", "model": "deepseek-reasoner", "weight": 1 }
+        ],
+        "scope": "global",
+        "priority": 21
+      },
+      {
+        "id": "rr-text-quality-fast",
+        "name": "text-quality-fast",
+        "description": "Text + quality + fast -> Kimi",
+        "enabled": true,
+        "cel_expression": "headers[\"x-modality\"] == \"text\" && headers[\"x-tier\"] == \"quality\" && headers[\"x-reasoning\"] == \"fast\"",
+        "targets": [
+          { "provider": "kimi", "model": "kimi-k2.5", "weight": 1 }
+        ],
+        "fallbacks": ["openai/o3", "openai/o1"],
+        "scope": "global",
+        "priority": 22
+      },
+      {
+        "id": "rr-text-quality-think",
+        "name": "text-quality-think",
+        "description": "Text + quality + think -> Kimi (primary), OpenAI (fallback)",
+        "enabled": true,
+        "cel_expression": "headers[\"x-modality\"] == \"text\" && headers[\"x-tier\"] == \"quality\" && headers[\"x-reasoning\"] == \"think\"",
+        "targets": [
+          { "provider": "kimi", "model": "kimi-k2-thinking", "weight": 1 }
+        ],
+        "fallbacks": ["openai/o3", "openai/o1"],
+        "scope": "global",
+        "priority": 23
+      },
+      {
+        "id": "rr-text-research-think",
+        "name": "text-research-think",
+        "description": "Text + research + think -> OpenRouter Grok (primary), Claude 3.5 Sonnet, Hermes 4 405B",
+        "enabled": true,
+        "cel_expression": "headers[\"x-modality\"] == \"text\" && headers[\"x-tier\"] == \"research\" && headers[\"x-reasoning\"] == \"think\"",
+        "targets": [
+          { "provider": "openrouter", "model": "x-ai/grok-4.20", "weight": 1 }
+        ],
+        "fallbacks": [
+          "openrouter/anthropic/claude-3.5-sonnet",
+          "openrouter/nousresearch/hermes-4-405b"
+        ],
+        "scope": "global",
+        "priority": 30
+      },
+      {
+        "id": "rr-text-research-fast",
+        "name": "text-research-fast",
+        "description": "Text + research + fast -> OpenRouter Grok (primary), Claude 3.5 Sonnet, Hermes 4 405B",
+        "enabled": true,
+        "cel_expression": "headers[\"x-modality\"] == \"text\" && headers[\"x-tier\"] == \"research\" && headers[\"x-reasoning\"] == \"fast\"",
+        "targets": [
+          { "provider": "openrouter", "model": "x-ai/grok-4.20", "weight": 1 }
+        ],
+        "fallbacks": [
+          "openrouter/anthropic/claude-3.5-sonnet",
+          "openrouter/nousresearch/hermes-4-405b"
+        ],
+        "scope": "global",
+        "priority": 31
+      }
+    ]
   }
 }
