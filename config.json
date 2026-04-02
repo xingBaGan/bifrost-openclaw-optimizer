@@ -1,0 +1,117 @@
+{
+  "$schema": "https://www.getbifrost.ai/schema",
+  "providers": {
+    "openai": {
+      "keys": [
+        {
+          "name": "openai-key-1",
+          "value": "env.OPENAI_KEY",
+          "models": [],
+          "weight": 1.0
+        }
+      ],
+      "proxy_config": {
+        "type": "http",
+        "url": "http://host.docker.internal:7897"
+      },
+      "network_config": {
+        "default_request_timeout_in_seconds": 60,
+        "max_retries": 1,
+        "retry_backoff_initial_ms": 100,
+        "retry_backoff_max_ms": 2000
+      },
+      "concurrency_and_buffer_size": {
+        "concurrency": 3,
+        "buffer_size": 10
+      }
+    },
+    "openrouter": {
+      "keys": [
+        {
+          "name": "openrouter-key-1",
+          "value": "env.OPENROUTER_KEY",
+          "models": [],
+          "weight": 1.0
+        }
+      ],
+      "proxy_config": {
+        "type": "http",
+        "url": "http://host.docker.internal:7897"
+      },
+      "network_config": {
+        "default_request_timeout_in_seconds": 60,
+        "max_retries": 1,
+        "retry_backoff_initial_ms": 100,
+        "retry_backoff_max_ms": 2000
+      },
+      "concurrency_and_buffer_size": {
+        "concurrency": 3,
+        "buffer_size": 10
+      }
+    },
+    "deepseek": {
+      "keys": [
+        {
+          "name": "deepseek-key-1",
+          "value": "env.DEEPSEEK_API_KEY",
+          "models": ["deepseek-chat", "deepseek-reasoner"],
+          "weight": 1.0
+        }
+      ],
+      "network_config": {
+        "base_url": "env.DEEPSEEK_BASE_URL",
+        "default_request_timeout_in_seconds": 60,
+        "max_retries": 1,
+        "retry_backoff_initial_ms": 100,
+        "retry_backoff_max_ms": 2000
+      },
+      "concurrency_and_buffer_size": {
+        "concurrency": 3,
+        "buffer_size": 10
+      },
+      "custom_provider_config": {
+        "base_provider_type": "openai",
+        "allowed_requests": {
+          "chat_completion": true,
+          "chat_completion_stream": true
+        },
+        "request_path_overrides": {
+          "chat_completion": "/chat/completions",
+          "chat_completion_stream": "/chat/completions"
+        }
+      }
+    },
+    "kimi": {
+      "keys": [
+        {
+          "name": "kimi-key-1",
+          "value": "env.KIMI_API_KEY",
+          "models": [],
+          "weight": 1.0
+        }
+      ],
+      "network_config": {
+        "base_url": "env.KIMI_BASE_URL",
+        "default_request_timeout_in_seconds": 60,
+        "max_retries": 1,
+        "retry_backoff_initial_ms": 100,
+        "retry_backoff_max_ms": 2000
+      },
+      "concurrency_and_buffer_size": {
+        "concurrency": 3,
+        "buffer_size": 10
+      },
+      "custom_provider_config": {
+        "base_provider_type": "openai",
+        "allowed_requests": {
+          "chat_completion": true,
+          "chat_completion_stream": true
+        },
+        "request_path_overrides": {
+          "chat_completion": "/chat/completions",
+          "chat_completion_stream": "/chat/completions"
+        }
+      }
+    }
+  }
+}
