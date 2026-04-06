@@ -88,20 +88,93 @@ ROUTES = [
     Route(
         name="reasoning",
         utterances=[
-            "step by step", "explain why", "analyze", "break down",
-            "prove that", "derive formula", "reasoning process",
-            "逐步分析", "解释为什么", "分析逻辑",
-            "证明结论", "推导公式", "推理过程",
+            # 逐步分析类
+            "step by step", "analyze step by step", "break down step by step",
+            "walk me through", "explain step by step", "show me the steps",
+            "detailed analysis", "in-depth analysis", "thorough analysis",
+            "逐步分析", "一步一步分析", "分步骤说明",
+            "详细分析", "深入分析", "逐步讲解",
+
+            # 解释原因类
+            "explain why", "why does", "what causes", "reason behind",
+            "how does this work", "what's the reasoning", "explain the logic",
+            "explain in detail", "elaborate on", "clarify the reason",
+            "解释为什么", "为什么会", "什么原因导致", "原因是什么",
+            "详细解释", "解释一下原理", "说明原因", "阐述原因",
+
+            # 证明推导类
+            "prove that", "demonstrate that", "show that", "verify that",
+            "derive the formula", "derive this equation", "proof of",
+            "mathematical proof", "formal proof", "prove mathematically",
+            "证明", "推导公式", "推导过程", "证明过程",
+            "数学证明", "形式化证明", "如何推导",
+
+            # 逻辑推理类
+            "reasoning process", "logical reasoning", "deduction", "inference",
+            "thought process", "chain of reasoning", "line of reasoning",
+            "reason about", "think through", "reason through",
+            "推理过程", "逻辑推理", "演绎推理", "推断",
+            "思维过程", "推理链", "逻辑链",
+
+            # 复杂度分析类（修复测试失败的场景）
+            "analyze complexity", "complexity analysis", "time complexity",
+            "space complexity", "analyze the algorithm", "algorithm analysis",
+            "analyze performance", "computational complexity",
+            "分析复杂度", "复杂度分析", "时间复杂度分析",
+            "空间复杂度", "算法分析", "性能分析",
+            "计算复杂度", "分析算法的复杂度",
+
+            # 比较分析类
+            "compare and contrast", "analyze the difference", "comparoaches",
+            "analyze trade-offs", "which approach is better and why",
+            "对比分析", "比较分析", "分析差异", "权衡分析",
+
+            # 根因分析类
+            "root cause", "underlying reason", "fundamental reason",
+            "analyze the root cause", "identify the cause", "find the reason",
+            "根本原因", "根因分析", "深层原因", "找出原因",
+
+            # 决策分析类
+            "should I choose", "help me decide", "analyze options",
+            "decision analysis", "evaluate alternatives",
+            "帮我分析选择", "决策分析", "评估方案", "分析利弊",
         ],
         metadata={"tier": "quality", "reasoning": "think", "task_type": "reasoning", "modality": "text"}
     ),
     Route(
         name="research",
         utterances=[
-            "survey literature", "state of art", "recent research",
-            "academic paper", "methodology", "peer-reviewed",
-            "文献综述", "最新研究趋势", "学术报告",
-            "研究方法", "同行评审", "实证研究",
+            # 文献综述类
+            "survey literature", "literature review", "state of art", "SOTA",
+            "recent research", "latest research", "research trends",
+            "survey the field", "review the literature",
+            "文献综述", "文献回顾", "最新研究", "研究趋势",
+            "前沿研究", "研究现状", "领域综述",
+
+            # 学术类
+            "academic paper", "research paper", "scholarly article",
+            "scientific paper", "conference paper", "journal article",
+            "学术论文", "研究论文", "会议论文", "期刊论文",
+
+            # 研究方法类
+            "methodology", "research methodology", "research method",
+            "experimental design", "research design", "study design",
+            "研究方法", "研究方法论", "实验设计", "研究设计",
+
+            # 评审类
+            "peer-reviewed", "peer review", "academic review",
+            "scholarly review", "citation analysis",
+            "同行评审", "学术评审", "引用分析",
+
+            # 实证研究类
+            "empirical research", "empirical study", "empirical analysis",
+            "experimental results", "research findings", "study findings",
+            "实证研究", "实验研究", "研究发现", "实验结果",
+
+            # 前沿类
+            "cutting-edge", "frontier research", "emerging research",
+            "breakthrough research", "innovative research",
+     "前沿研究", "突破性研究", "创新性研究", "新兴研究",
         ],
         metadata={"tier": "research", "reasoning": "think", "task_type": "research", "modality": "text"}
     ),
