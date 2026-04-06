@@ -4,7 +4,7 @@ FROM python:3.12-slim AS builder
 WORKDIR /app
 
 # Install uv (fast Python package installer)
-RUN pip install --no-cache-dir uv
+RUN pip install --no-cache-dir uv -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 # Copy dependency and build files
 COPY pyproject.toml ./

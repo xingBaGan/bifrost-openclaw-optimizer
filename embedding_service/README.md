@@ -159,3 +159,39 @@ curl -X PUT http://localhost:8001/config/threshold?threshold=0.7
 - [v3 更新说明](./CHANGELOG_V3.md)
 - [Casual Fallback 策略设计](../docs/CASUAL_FALLBACK_STRATEGY.md)
 - [Semantic Router 官方文档](https://github.com/aurelio-labs/semantic-router)
+
+---
+
+## 🚀 VPS 部署 (针对国内环境优化)
+
+如果你正在将此服务部署到 VPS（特别是国内云厂商），请参考以下步骤以确保安装过程顺利。
+
+### 1. 环境准备
+- **Docker** (20.10+)
+- **Docker Compose** (V2)
+
+### 2. 解决 Docker 镜像下载超时 (针对国内 VPS)
+如果 `docker compose up` 报错 `i/o timeout`，你需要配置镜像加速器。编辑 VPS 上的 `/etc/docker/daemon.json`：
+
+```json
+{
+  "registry-mirrors": [
+    "https://docker.m.daocloud.io",
+    "https://dockerhub.icu",
+    "https://docker.uerr.cn"
+  ]
+}
+```
+保存后重启 Docker：`systemctl daemon-reload && systemctl restart docker`。
+
+### 3. 一键部署
+在项目根目录下执行：
+
+```bash
+docker compose up -d --build
+```
+
+### 4. 关键优化点 (已内置)
+- **模型下载加速**: `Dockerfile` 已内置 `HF_ENDPOINT=https://hf-mirror.com`，自动使用国内镜像下载 Hugging Face 模型。
+- **启动等待**: 服务在下载约 470MB 的模型权重时会处于 `starting` 状态。你可以通过 `docker logs -f bifrost-embedding` 查看实时进度。
+- **健康检查**: 容器已配置健康检查，通过 `docker ps` 看到 `healthy` 后表示意图识别引擎已完全就绪。
