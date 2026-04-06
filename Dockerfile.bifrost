@@ -15,7 +15,7 @@ RUN git clone --depth 1 --branch transports/v1.5.0-prerelease1 https://github.co
 
 # Pre-download dependencies to cache the layer
 WORKDIR /src/transports
-RUN GOMODCACHE=/go/pkg/mod go mod download
+RUN GOMODCACHE=/go/pkg/mod GOPROXY=https://goproxy.cn,direct go mod download
 
 WORKDIR /src
 # CLEAN current UI source and REPLACE with BUILT assets (for go:embed)
@@ -41,8 +41,8 @@ RUN python3 /tmp/patch_plugins.py /src/transports/bifrost-http/server/plugins.go
 # Set up transports to use local core
 WORKDIR /src/transports
 RUN go mod edit -replace github.com/maximhq/bifrost/core=../core && \
-    GOPROXY=direct go mod tidy && \
-    GOPROXY=direct go mod vendor
+    GOPROXY=https://goproxy.cn,direct go mod tidy && \
+    GOPROXY=https://goproxy.cn,direct go mod vendor
 
 # Build EVERYTHING into a single static binary with EMBEDDED UI
 RUN CGO_ENABLED=1 go build -v -mod=vendor -trimpath -o bifrost ./bifrost-http/main.go

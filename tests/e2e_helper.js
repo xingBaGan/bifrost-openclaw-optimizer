@@ -17,46 +17,49 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 /**
  * Builds OpenAI-style message array.
- * Supports text and vision modalities.
+ * Supports text/vision modalities and optional system prompt.
  */
-const buildMessages = (prompt, modality) => {
-  if (modality !== 'vision') {
-    return [{ role: 'user', content: prompt }];
+const buildMessages = (prompt, modality, systemPrompt) => {
+  const msgs = [];
+  if (systemPrompt) {
+    msgs.push({ role: 'system', content: systemPrompt });
   }
-  if (!imagePath) {
-    throw new Error('MODALITY=vision requires IMAGE_PATH');
-  }
-  const img = fs.readFileSync(imagePath);
-  const b64 = img.toString('base64');
-  return [
-    {
+  if (modality === 'vision') {
+    if (!imagePath) throw new Error('MODALITY=vision requires IMAGE_PATH');
+    const img = fs.readFileSync(imagePath);
+    const b64 = img.toString('base64');
+    msgs.push({
       role: 'user',
       content: [
         { type: 'text', text: prompt },
         { type: 'image_url', image_url: { url: `data:image/png;base64,${b64}` } }
       ]
-    }
-  ];
+    });
+  } else {
+    msgs.push({ role: 'user', content: prompt });
+  }
+  return msgs;
 };
 
 /**
  * Sends a chat completion request to Bifrost.
  */
-const sendRequest = async ({ tier, reasoning, modality, prompt, metadata = {} }) => {
+const sendRequest = async ({ tier, reasoning, modality, prompt, systemPrompt, overrideHeaders, metadata = {} }) => {
   const id = crypto.randomUUID();
-  // For easy log discovery, we can append ID to prompt if prompt is string
+  // For easy log discovery, append ID to prompt for log matching
   const taggedPrompt = typeof prompt === 'string' ? `${prompt} [test_id:${id}]` : prompt;
   
   const payload = {
     model: tier || 'openai/gpt-4o',
-    messages: buildMessages(taggedPrompt, modality),
+    messages: buildMessages(taggedPrompt, modality, systemPrompt),
     max_tokens: maxTokens,
     max_completion_tokens: maxTokens,
     ...(stopSeq ? { stop: [stopSeq] } : {})
   };
 
   const headers = {
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
+    ...(overrideHeaders || {})
   };
   if (tier) headers['x-tier'] = tier;
   if (reasoning) headers['x-reasoning'] = reasoning;

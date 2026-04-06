@@ -18,7 +18,7 @@
         {
           "name": "openai-key-1",
           "value": "env.OPENAI_KEY",
-          "models": [],
+          "models": ["gpt-4o", "o1", "o3", "chatgpt-4o-latest"],
           "weight": 1.0
         }
       ],
@@ -42,7 +42,11 @@
         {
           "name": "openrouter-key-1",
           "value": "env.OPENROUTER_KEY",
-          "models": [],
+          "models": [
+            "x-ai/grok-4.20",
+            "anthropic/claude-3.5-sonnet",
+            "nousresearch/hermes-4-405b"
+          ],
           "weight": 1.0
         }
       ],
@@ -98,7 +102,10 @@
         {
           "name": "kimi-key-1",
           "value": "env.KIMI_API_KEY",
-          "models": [],
+          "models": [
+            "kimi-k2.5",
+            "kimi-k2-thinking"
+          ],
           "weight": 1.0
         }
       ],
@@ -128,6 +135,31 @@
   },
   "governance": {
     "routing_rules": [
+      {
+        "id": "rr-text-large-context",
+        "name": "text-large-context",
+        "description": "Large context texts (>32k tokens) -> Kimi (supports 200k+)",
+        "enabled": true,
+        "cel_expression": "headers[\"x-modality\"] == \"text\" && headers[\"x-context-size\"] == \"large\"",
+        "targets": [
+          { "provider": "kimi", "model": "kimi-k2.5", "weight": 1 }
+        ],
+        "scope": "global",
+        "priority": 1
+      },
+      {
+        "id": "rr-text-structured",
+        "name": "text-structured-output",
+        "description": "Requires Tools/JSON -> OpenAI or Kimi",
+        "enabled": true,
+        "cel_expression": "headers[\"x-modality\"] == \"text\" && (headers[\"x-has-tools\"] == \"true\" || headers[\"x-has-json-output\"] == \"true\")",
+        "targets": [
+          { "provider": "openai", "model": "gpt-4o", "weight": 1 }
+        ],
+        "fallbacks": ["kimi/kimi-k2.5"],
+        "scope": "global",
+        "priority": 2
+      },
       {
         "id": "rr-vision-quality-think",
         "name": "vision-quality-think",
