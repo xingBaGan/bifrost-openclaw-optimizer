@@ -48,22 +48,23 @@ const sendRequest = async ({ tier, reasoning, modality, prompt, metadata = {} })
   const taggedPrompt = typeof prompt === 'string' ? `${prompt} [test_id:${id}]` : prompt;
   
   const payload = {
-    model: tier,
+    model: tier || 'openai/gpt-4o',
     messages: buildMessages(taggedPrompt, modality),
     max_tokens: maxTokens,
     max_completion_tokens: maxTokens,
-    ...(stopSeq ? { stop: [stopSeq] } : {}),
-    metadata: { ...metadata, test_id: id }
+    ...(stopSeq ? { stop: [stopSeq] } : {})
   };
+
+  const headers = {
+    'Content-Type': 'application/json'
+  };
+  if (tier) headers['x-tier'] = tier;
+  if (reasoning) headers['x-reasoning'] = reasoning;
+  if (modality) headers['x-modality'] = modality;
 
   const res = await fetch(`${baseUrl}/v1/chat/completions`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-tier': tier,
-      'x-reasoning': reasoning,
-      'x-modality': modality
-    },
+    headers,
     body: JSON.stringify(payload)
   });
 

@@ -1,5 +1,17 @@
 {
   "$schema": "https://www.getbifrost.ai/schema",
+  "plugins": [
+    {
+      "enabled": false,
+      "name": "smart-classifier",
+      "config": {}
+    },
+    {
+      "enabled": true,
+      "name": "classifier",
+      "config": {}
+    }
+  ],
   "providers": {
     "openai": {
       "keys": [

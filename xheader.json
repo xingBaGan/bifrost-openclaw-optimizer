@@ -1,0 +1,42 @@
+{
+    "x-headers": {
+        "x-modality": {
+            "description": "请求的模态类型",
+            "enums": [
+                "text",
+                "vision"
+            ]
+        },
+        "x-tier": {
+            "description": "请求的成本与质量分级",
+            "enums": [
+                "economy",
+                "quality",
+                "research",
+                "premium"
+            ]
+        },
+        "x-reasoning": {
+            "description": "推理速度与深度偏好",
+            "enums": [
+                "fast",
+                "think"
+            ]
+        },
+        "x-task-type": {
+            "description": "任务的具体业务类型（基于 tasks.json 映射）",
+            "enums": [
+                "heavy_coding",
+                "light_coding",
+                "reasoning_complex",
+                "agent_task",
+                "long_context",
+                "multimodal_analyze",
+                "chinese_writing",
+                "general_writing",
+                "quick_query",
+                "heartbeat_check"
+            ]
+        }
+    }
+}

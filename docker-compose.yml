@@ -1,11 +1,18 @@
 services:
   bifrost:
-    image: maximhq/bifrost:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.bifrost
+    image: bifrost:local-dynamic
     container_name: bifrost
     ports:
       - "8080:8080"
+      - "8081:8081"
     volumes:
       - ./data:/app/data
+      - ./config.json:/app/config.json
+      - ./xheader.json:/app/xheader.json:ro
+      - ./plugins:/app/plugins:ro
     env_file:
       - ./.env
     restart: unless-stopped

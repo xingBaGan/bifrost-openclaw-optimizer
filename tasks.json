@@ -1,0 +1,42 @@
+[
+    {
+        "task_type": "heavy_coding",
+        "description": "复杂编程任务，包括系统架构设计、跨文件调试、大规模代码重构和新功能实现。"
+    },
+    {
+        "task_type": "light_coding",
+        "description": "轻量级编程辅助，如单函数生成、正则表达式编写、代码片段润色及单元测试生成。"
+    },
+    {
+        "task_type": "reasoning_complex",
+        "description": "深度逻辑推理，涵盖复杂数学证明、算法竞赛难题、法律合规审计及多步逻辑悖论分析。"
+    },
+    {
+        "task_type": "agent_task",
+        "description": "智能体任务，涉及多步骤规划、复杂的函数调用（Function Calling）及自动化工作流执行。"
+    },
+    {
+        "task_type": "long_context",
+        "description": "长文本处理，包括超长文档分析（PDF/财务报表）、全库代码扫描及长视频内容总结。"
+    },
+    {
+        "task_type": "multimodal_analyze",
+        "description": "多模态分析，涉及对图片、图表、视频或音频内容的理解、转换及深度提取。"
+    },
+    {
+        "task_type": "chinese_writing",
+        "description": "中文母语级创作，强调文风、公文规范、创意写作以及对中国文化背景的深度理解。"
+    },
+    {
+        "task_type": "general_writing",
+        "description": "通用文案创作，包括邮件撰写、公关稿、日常博客文章及跨语言的内容润色。"
+    },
+    {
+        "task_type": "quick_query",
+        "description": "即时性事实查询、实时热点检索、简单翻译及低延迟的数据格式转换。"
+    },
+    {
+        "task_type": "heartbeat_check",
+        "description": "系统心跳检测或极简指令，用于测试模型连通性、延迟或进行最基础的分类判断。"
+    }
+]
