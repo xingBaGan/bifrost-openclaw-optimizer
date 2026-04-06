@@ -1,5 +1,12 @@
 {
   "$schema": "https://www.getbifrost.ai/schema",
+  "vector_store": {
+    "enabled": true,
+    "type": "redis",
+    "config": {
+      "addr": "redis:6379"
+    }
+  },
   "plugins": [
     {
       "enabled": false,
@@ -17,6 +24,17 @@
           "confidence_threshold": 0.5,
           "fallback_to_rules": true
         }
+      }
+    },
+    {
+      "enabled": false,
+      "name": "semantic_cache",
+      "config": {
+        "dimension": 1,
+        "ttl": "1h",
+        "cleanup_on_shutdown": false,
+        "cache_by_model": true,
+        "cache_by_provider": true
       }
     }
   ],

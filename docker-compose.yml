@@ -1,6 +1,24 @@
 version: '3.8'
 
 services:
+  # Redis for Semantic Caching
+  redis:
+    image: redis:7-alpine
+    container_name: bifrost-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes --maxmemory 2gb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - bifrost-network
+
   # Semantic Router Embedding Service
   embedding-service:
     build:
@@ -13,6 +31,8 @@ services:
     environment:
       - HF_ENDPOINT=https://hf-mirror.com
       - PYTHONUNBUFFERED=1
+      - HTTP_PROXY=http://host.docker.internal:7897
+      - HTTPS_PROXY=http://host.docker.internal:7897
     healthcheck:
       test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8001/health', timeout=5)"]
       interval: 30s
@@ -41,6 +61,8 @@ services:
     env_file:
       - ./.env
     depends_on:
+      redis:
+        condition: service_healthy
       embedding-service:
         condition: service_healthy
     restart: unless-stopped
@@ -52,4 +74,7 @@ services:
 networks:
   bifrost-network:
     driver: bridge
+
+volumes:
+  redis-data:
 
