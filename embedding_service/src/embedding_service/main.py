@@ -51,6 +51,8 @@ ROUTES = [
             "fix this bug", "debug this", "syntax error",
             "how do I write", "show me code", "give me code",
             "implement data structure", "write a program",
+            "build a binary tree", "implement a linked list", "create a hash map",
+            "code a stack", "implement a queue", "write a tree traversal",
             # 中文 - 直接实现
             "写一个函数", "创建一个类", "实现一个功能",
             "添加一个方法", "写个代码", "怎么写代码",
@@ -58,6 +60,8 @@ ROUTES = [
             "写一个XX算法", "帮我写", "给我代码",
             "修复bug", "debug代码", "语法错误",
             "实现一个数据结构", "写一个程序",
+            "实现二叉树", "实现链表", "创建哈希表",
+            "写个栈", "实现队列", "树的遍历代码",
         ],
         metadata={"tier": "quality", "reasoning": "fast", "task_type": "code", "modality": "text"}
     ),
@@ -66,12 +70,14 @@ ROUTES = [
         utterances=[
             # 架构/优化特征
             "refactor architecture", "redesign system", "improve architecture",
+            "refactor the module", "refactor authentication", "refactor this code",
             "optimize performance", "improve efficiency", "reduce latency",
             "design pattern", "code review", "best practices",
             "scalability", "maintainability", "trade-offs",
             "compare approaches", "which is better", "pros and cons",
             # 中文 - 架构/优化
             "重构架构", "重新设计", "改进架构",
+            "重构模块", "重构认证", "重构代码",
             "优化性能", "提升效率", "降低延迟",
             "设计模式", "代码审查", "最佳实践",
             "可扩展性", "可维护性", "权衡分析",

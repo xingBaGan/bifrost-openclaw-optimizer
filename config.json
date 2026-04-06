@@ -9,7 +9,15 @@
     {
       "enabled": true,
       "name": "classifier",
-      "config": {}
+      "config": {
+        "embedding_service": {
+          "enabled": true,
+          "url": "http://embedding-service:8001",
+          "timeout_ms": 500,
+          "confidence_threshold": 0.5,
+          "fallback_to_rules": true
+        }
+      }
     }
   ],
   "providers": {

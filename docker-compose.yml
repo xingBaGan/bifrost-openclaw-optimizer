@@ -1,4 +1,29 @@
+version: '3.8'
+
 services:
+  # Semantic Router Embedding Service
+  embedding-service:
+    build:
+      context: ./embedding_service
+      dockerfile: Dockerfile
+    image: bifrost-embedding:latest
+    container_name: bifrost-embedding
+    ports:
+      - "8001:8001"
+    environment:
+      - HF_ENDPOINT=https://hf-mirror.com
+      - PYTHONUNBUFFERED=1
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8001/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - bifrost-network
+
+  # Bifrost Gateway
   bifrost:
     build:
       context: .
@@ -15,6 +40,16 @@ services:
       - ./plugins:/app/plugins:ro
     env_file:
       - ./.env
+    depends_on:
+      embedding-service:
+        condition: service_healthy
     restart: unless-stopped
+    networks:
+      - bifrost-network
     extra_hosts:
       - "host.docker.internal:host-gateway"
+
+networks:
+  bifrost-network:
+    driver: bridge
+

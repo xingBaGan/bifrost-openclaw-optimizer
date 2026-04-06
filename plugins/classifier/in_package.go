@@ -1,8 +1,10 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/maximhq/bifrost/core/schemas"
 )
@@ -10,8 +12,9 @@ import (
 // ClassifierPlugin classifies requests by multi-dimensional scoring
 // to inject routing headers for governance rules.
 type ClassifierPlugin struct {
-	config any
-	logger schemas.Logger
+	config          *ClassifierConfig
+	logger          schemas.Logger
+	embeddingClient *EmbeddingClient
 }
 
 // chatMessage represents a single message in OpenAI-compatible format.
@@ -29,7 +32,38 @@ func InitClassifier(config any, logger schemas.Logger) (schemas.BasePlugin, erro
 	if logger != nil {
 		logger.Info("Classifier Plugin (In-package) Init")
 	}
-	return &ClassifierPlugin{config: config, logger: logger}, nil
+
+	// Parse config
+	var pluginConfig ClassifierConfig
+	if config != nil {
+		configBytes, err := json.Marshal(config)
+		if err != nil {
+			return nil, fmt.Errorf("marshal config: %w", err)
+		}
+		if err := json.Unmarshal(configBytes, &pluginConfig); err != nil {
+			return nil, fmt.Errorf("unmarshal config: %w", err)
+		}
+	}
+
+	plugin := &ClassifierPlugin{
+		config: &pluginConfig,
+		logger: logger,
+	}
+
+	// Initialize embedding client if configured
+	if pluginConfig.EmbeddingService != nil && pluginConfig.EmbeddingService.Enabled {
+		timeout := time.Duration(pluginConfig.EmbeddingService.TimeoutMs) * time.Millisecond
+		plugin.embeddingClient = NewEmbeddingClient(pluginConfig.EmbeddingService.URL, timeout)
+
+		// Health check
+		if err := plugin.embeddingClient.HealthCheck(); err != nil {
+			logger.Warn(fmt.Sprintf("Embedding service unhealthy, will fallback to rules: %v", err))
+		} else {
+			logger.Info(fmt.Sprintf("Embedding service ready at %s", pluginConfig.EmbeddingService.URL))
+		}
+	}
+
+	return plugin, nil
 }
 
 func (p *ClassifierPlugin) GetName() string { return "classifier" }
@@ -106,16 +140,28 @@ func (p *ClassifierPlugin) HTTPTransportPreHook(
 		return nil, nil
 	}
 
-	// Step 4: Score text request across multiple dimensions
-	tier, reasoning := p.scoreTierAndReasoning(systemText, userText, len(msgs))
-	// Tool calling boosts tier to at least quality
-	if hasTool && tier == "economy" {
-		tier = "quality"
+	// Step 4: Try embedding classification first (if enabled)
+	tier, reasoning, taskType, embeddingUsed := p.tryEmbeddingClassify(userText)
+
+	// If embedding failed or not configured, fall back to rule-based classification
+	if !embeddingUsed {
+		tier, reasoning = p.scoreTierAndReasoning(systemText, userText, len(msgs))
+		// Tool calling boosts tier to at least quality
+		if hasTool && tier == "economy" {
+			tier = "quality"
+		}
+		taskType = inferTaskType(tier, reasoning)
 	}
-	taskType := inferTaskType(tier, reasoning)
-	ctx.AppendRoutingEngineLog(schemas.RoutingEngineRoutingRule,
-		fmt.Sprintf("Classifier: text/%s/%s (%s) lang=%s ctx=%s tools=%v json=%v",
-			tier, reasoning, taskType, lang, ctxSize, hasTool, hasJSON))
+
+	logMsg := fmt.Sprintf("Classifier: text/%s/%s (%s) lang=%s ctx=%s tools=%v json=%v",
+		tier, reasoning, taskType, lang, ctxSize, hasTool, hasJSON)
+	if embeddingUsed {
+		logMsg += " [embedding]"
+	} else {
+		logMsg += " [rules]"
+	}
+	ctx.AppendRoutingEngineLog(schemas.RoutingEngineRoutingRule, logMsg)
+
 	p.injectHeaders(ctx, req.Headers, "text", tier, reasoning, taskType, lang, ctxSize, hasTool, hasJSON)
 	return nil, nil
 }
@@ -160,6 +206,56 @@ func (p *ClassifierPlugin) injectHeaders(
 	if hasJSON {
 		ctxHeaders["x-has-json-output"] = "true"
 	}
+}
+
+// tryEmbeddingClassify attempts to classify using the embedding service.
+// Returns (tier, reasoning, taskType, used) where used indicates if embedding was actually used.
+func (p *ClassifierPlugin) tryEmbeddingClassify(text string) (tier, reasoning, taskType string, used bool) {
+	// Check if embedding service is configured and enabled
+	if p.embeddingClient == nil {
+		return "", "", "", false
+	}
+
+	if p.config == nil || p.config.EmbeddingService == nil || !p.config.EmbeddingService.Enabled {
+		return "", "", "", false
+	}
+
+	// Call embedding service
+	result, err := p.embeddingClient.Classify(text)
+	if err != nil {
+		if p.logger != nil {
+			p.logger.Warn(fmt.Sprintf("Embedding classification failed: %v", err))
+		}
+// Fallback to rules if configured
+		if p.config.EmbeddingService.FallbackToRules {
+			return "", "", "", false
+		}
+		// Otherwise return economy as safe default
+		return "economy", "fast", "casual", true
+	}
+
+	// Check confidence threshold
+	threshold := p.config.EmbeddingService.ConfidenceThreshold
+	if threshold == 0 {
+		threshold = 0.5 // Default threshold
+	}
+
+	// If confidence too low and fallback enabled, return false to use rules
+	if result.Confidence < threshold && p.config.EmbeddingService.FallbackToRules {
+		if p.logger != nil {
+			p.logger.Info(fmt.Sprintf("Embedding confidence %.2f below threshold %.2f, falling back to rules",
+				result.Confidence, threshold))
+		}
+		return "", "", "", false
+	}
+
+	// Use embedding result
+	if p.logger != nil {
+		p.logger.Info(fmt.Sprintf("Embedding classified as %s/%s/%s (conf=%.2f)",
+			result.TaskType, result.Tier, result.Reasoning, result.Confidence))
+	}
+
+	return result.Tier, result.Reasoning, result.TaskType, true
 }
 
 // defaultStr returns fallback if s is empty.

@@ -26,6 +26,8 @@ COPY --from=ui-builder /src/ui/out transports/bifrost-http/ui
 COPY plugins/smart_classifier/main.go transports/bifrost-http/server/smart_classifier.go
 COPY plugins/classifier/in_package.go transports/bifrost-http/server/classifier.go
 COPY plugins/classifier/scoring.go transports/bifrost-http/server/classifier_scoring.go
+COPY plugins/classifier/embedding_client.go transports/bifrost-http/server/classifier_embedding_client.go
+COPY plugins/classifier/config.go transports/bifrost-http/server/classifier_config.go
 
 # Patch lib/config.go to include new plugins as built-in
 RUN sed -i 's/name == otel.PluginName/name == otel.PluginName || name == "smart-classifier" || name == "classifier"/' transports/bifrost-http/lib/config.go
