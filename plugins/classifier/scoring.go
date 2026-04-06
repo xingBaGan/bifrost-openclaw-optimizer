@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"fmt"
+	"regexp"
 	"strings"
 	"unicode"
 )
@@ -11,20 +12,63 @@ import (
 // Density thresholds prevent single-keyword false positives.
 var (
 	codeKeywords = []string{
-		"```", "func ", "def ", "class ", "import ", "return ",
-		"const ", "var ", "package ", "module ", "interface ",
+		// Code block markers
+		"```", "```python", "```javascript", "```go", "```rust", "```java",
+		"```typescript", "```cpp", "```c++",
+		// Function/class definitions (multi-language)
+		"func ", "def ", "class ", "function ", "fn ", "impl ", "struct ",
+		"interface ", "enum ", "trait ", "type ",
+		// Import/package management
+		"import ", "require(", "use ", "package ", "module ", "from ", "export ",
+		// Control flow
+		"return ", "yield", "await ", "async ", "for ", "while ", "if ", "else ",
+		// Variable declarations
+		"const ", "var ", "let ", "mut ", "pub ",
+		// Common symbols and patterns
+		" => ", " -> ", "::", "pub fn", "async fn", "fn main",
+		// OOP patterns
+		"extends ", "implements ", "override ", "constructor",
+		// Error handling
+		"try ", "catch ", "throw ", "panic", "unwrap", "Result<",
+		// Comments and docs// ", "/* ", "* @", "/// ", "#[", "TODO:", "FIXME:",
 	}
 	reasonKeywords = []string{
+		// English
 		"step by step", "analyze", "explain why", "reason about",
+		"think through", "break down", "consider", "evaluate",
+		"derive", "prove", "demonstrate", "justify",
+		"reasoning", "logical", "inference", "deduce",
+		// Chinese
 		"逐步", "深入分析", "论证", "推理", "思考",
+		"分析原因", "解释为什么", "推导", "证明",
+		"详细说明", "仔细考虑", "评估", "判断",
 	}
 	researchKeywords = []string{
-		"research", "academic", "论文", "survey", "expert",
+		// English
+		"research", "academic", "survey", "expert",
 		"comprehensive", "systematic", "peer-reviewed",
+		"literature review", "state-of-the-art", "SOTA",
+		"benchmark", "empirical", "methodology",
+		"hypothesis", "experiment", "publication",
+		"journal", "conference", "proceedings",
+		// Chinese
+		"论文", "学术", "研究", "综述",
+		"实证", "方法论", "假设", "实验",
+		"文献综述", "最新进展", "前沿",
 	}
 	codingSystemKeywords = []string{
+		// English
 		"code", "programming", "debug", "developer", "engineer",
-		"编程", "代码", "software", "refactor",
+		"software", "refactor", "optimize", "implement",
+		"algorithm", "data structure", "API", "backend", "frontend",
+		"database", "architecture", "design pattern",
+		"unit test", "integration", "deployment",
+		"repository", "version control", "git",
+		// Chinese
+		"编程", "代码", "调试", "开发", "工程师",
+		"软件", "重构", "优化", "实现",
+		"算法", "数据结构", "后端", "前端",
+		"数据库", "架构", "设计模式",
 	}
 )
 
@@ -72,14 +116,53 @@ func hasVisionContent(body string) bool {
 }
 
 // countMatches returns number of keywords found in text.
+// Uses word boundary matching for alphanumeric keywords to avoid false positives.
 func countMatches(text string, keywords []string) int {
 	count := 0
 	for _, kw := range keywords {
-		if strings.Contains(text, kw) {
+		if matchKeyword(text, kw) {
 			count++
 		}
 	}
 	return count
+}
+
+// matchKeyword checks if a keyword exists in text with smart matching.
+// For symbols and special patterns, uses direct string matching.
+// For words, uses word boundary matching to avoid false positives.
+func matchKeyword(text, keyword string) bool {
+	// Special case: multi-word phrases (contains space)
+	if strings.Contains(keyword, " ") {
+		return strings.Contains(text, keyword)
+	}
+
+	// Check if keyword is purely symbolic (no alphanumeric chars)
+	hasAlphaNum := false
+	for _, r := range keyword {
+		if unicode.IsLetter(r) || unicode.IsDigit(r) {
+			hasAlphaNum = true
+			break
+		}
+	}
+
+	// For symbols/operators, use direct matching
+	if !hasAlphaNum {
+		return strings.Contains(text, keyword)
+	}
+
+	// For alphanumeric keywords, use word boundary matching
+	// to avoid "import" matching "important"
+	trimmed := strings.TrimSpace(keyword)
+
+	// Build regex with word boundaries
+	// \b works for ASCII, but for Unicode we need custom logic
+	pattern := `\b` + regexp.QuoteMeta(trimmed) + `\b`
+	matched, err := regexp.MatchString(pattern, text)
+	if err != nil {
+		// Fallback to simple contains if regex fails
+		return strings.Contains(text, keyword)
+	}
+	return matched
 }
 
 // scoreTierAndReasoning calculates tier and reasoning via weighted scoring.
@@ -209,17 +292,46 @@ func detectLanguage(text string) string {
 }
 
 // estimateContextSize returns "small"/"medium"/"large" based on token estimation.
-// English: ~4 chars/token, CJK: ~1.5 tokens/char.
+// Uses conservative coefficients to account for tokenizer differences across models.
+// Code and structured content have higher token density than plain text.
 func estimateContextSize(text string) string {
 	cjkCount, nonCJK := 0, 0
+	codeChars := 0 // Count of code-like characters (brackets, operators, etc.)
+
 	for _, r := range text {
 		if unicode.Is(unicode.Han, r) {
 			cjkCount++
 		} else {
 			nonCJK++
+			// Detect code-like patterns
+			if r == '{' || r == '}' || r == '[' || r == ']' ||
+				r == '(' || r == ')' || r == '<' || r == '>' ||
+				r == ';' || r == ':' || r == '=' || r == '|' {
+				codeChars++
+			}
 		}
 	}
-	tokens := nonCJK/4 + cjkCount*3/2
+
+	// Base token estimation:
+	// - English plain text: ~4 chars/token
+	// - CJK characters: ~2 tokens/char (conservative, some models ~1.5)
+	// - Code content: ~3.5 chars/token (higher density due to symbols)
+	tokens := 0
+
+	// If text has high code density, use code coefficient
+	codeRatio := float64(codeChars) / float64(nonCJK+1) // +1 to avoid division by zero
+	if codeRatio > 0.15 || strings.Contains(text, "```") {
+		// Code-heavy content: use more conservative estimate
+		tokens = nonCJK*10/35 + cjkCount*2 // 3.5 chars/token for code, 2 tokens/char for CJK
+	} else {
+		// Plain text: standard estimate
+		tokens = nonCJK/4 + cjkCount*2 // 4 chars/token for English, 2 tokens/char for CJK
+	}
+
+	// Thresholds based on common model context windows:
+	// - small: < 4K tokens (fits in all models)
+	// - medium: 4K-32K tokens (needs models like GPT-4, Claude)
+	// - large: > 32K tokens (needs specialized models like Kimi, Claude with extended context)
 	if tokens > 32000 {
 		return "large"
 	}

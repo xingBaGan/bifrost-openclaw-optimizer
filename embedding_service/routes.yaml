@@ -1,0 +1,92 @@
+# 路由配置文件
+# 支持动态加载和更新
+
+routes:
+  # 专业类别 - 明确定义
+  - name: code_simple
+    enabled: true
+    utterances:
+      - write a function
+      - create a class
+      - implement this
+      - fix this bug
+      - debug this code
+      - 写一个函数
+      - 创建一个类
+      - 实现这个
+      - 帮我debug
+    metadata:
+      tier: quality
+      reasoning: fast
+      task_type: code
+
+  - name: code_complex
+    enabled: true
+    utterances:
+      - refactor architecture
+      - optimize algorithm
+      - design distributed system
+      - 重构架构
+      - 优化算法
+      - 设计分布式系统
+    metadata:
+      tier: quality
+      reasoning: think
+      task_type: code_complex
+
+  - name: reasoning
+    enabled: true
+    utterances:
+      - step by step
+      - explain why
+      - analyze this
+      - 逐步分析
+      - 解释为什么
+      - 分析这个
+    metadata:
+      tier: quality
+      reasoning: think
+      task_type: reasoning
+
+  - name: research
+    enabled: true
+    utterances:
+      - survey literature
+      - state of art
+      - recent research
+      - 文献综述
+      - 最新研究
+      - 学术论文
+    metadata:
+      tier: research
+      reasoning: think
+      task_type: research
+
+  # Casual - 特殊配置
+  - name: casual
+    enabled: true
+    strategy: fallback  # 关键: 标记为fallback策略
+    # 可选: 定义一些典型的greeting作为正样本
+    utterances:
+      - hello
+      - hi
+      - thanks
+      - bye
+      - 你好
+      - 谢谢
+      - 再见
+    # 负样本: 明确不是casual的例子
+    negative_utterances:
+      - write code  # 这是code
+      - analyze data  # 这是reasoning
+      - research paper  # 这是research
+    metadata:
+      tier: economy
+      reasoning: fast
+      task_type: casual
+
+# 全局配置
+config:
+  confidence_threshold: 0.5  # 低于此值fallback to casual
+  use_negative_sampling: true  # 使用负样本
+  casual_strategy: fallback  # casual的处理策略

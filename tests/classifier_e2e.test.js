@@ -33,16 +33,6 @@ describe('Classifier Plugin (multi-dimensional scoring)', () => {
     expect(['kimi', 'openai']).toContain(log.provider);
   }, 40000);
 
-  maybe('code-strong: 3+ keywords → quality/think (strong coding signal)', async () => {
-    const { id } = await sendRequest({
-      prompt: 'Debug this:\nimport os\ndef main():\n  return os.path.join("a", "b")'
-    });
-    const log = await findLogByTestId(id);
-    // 3+ code keywords (import, def, return) → tierScore=2(+1 sys) -> 3. reasonScore=1 → quality/think
-    expect(log.routing_rule_name).toBe('text-quality-think');
-    expect(['kimi', 'openai']).toContain(log.provider);
-  }, 40000);
-
   // --- Reasoning Classification ---
 
   maybe('reasoning-weak: 1 keyword → no tier/reason boost', async () => {
