@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  # Redis for Semantic Caching
+  redis:
+    image: redis:7-alpine
+    container_name: bifrost-redis
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+    networks:
+      - bifrost-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+
+  # Semantic Router Embedding Service (Pulls from GHCR bifrost-openclaw-optimizer)
+  embedding-service:
+    image: ghcr.io/xingbagan/bifrost-openclaw-optimizer/bifrost-embedding:latest
+    container_name: bifrost-embedding
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    environment:
+      - HF_ENDPOINT=https://hf-mirror.com
+      - PYTHONUNBUFFERED=1
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8001/health', timeout=5)"]
+    networks:
+      - bifrost-network
+
+  # Bifrost Gateway (Pulls from GHCR bifrost-openclaw-optimizer)
+  bifrost:
+    image: ghcr.io/xingbagan/bifrost-openclaw-optimizer/bifrost-server:latest
+    container_name: bifrost
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    volumes:
+      - ./data:/app/data
+      - ./config.json:/app/config.json
+    networks:
+      - bifrost-network
+
+networks:
+  bifrost-network:
+    name: bifrost-network
+
+volumes:
+  redis-data:

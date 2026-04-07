@@ -1,0 +1,47 @@
+name: Build and Push to GHCR
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  # 自动获取 GitHub Repo 名称（全小写）
+  IMAGE_NAME_EMBEDDING: ${{ github.repository }}/bifrost-embedding
+  IMAGE_NAME_SERVER: ${{ github.repository }}/bifrost-server
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Embedding Service
+        uses: docker/build-push-action@v5
+        with:
+          context: ./embedding_service
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_EMBEDDING }}:latest,${{ env.REGISTRY }}/${{ env.IMAGE_NAME_EMBEDDING }}:${{ github.sha }}
+          platforms: linux/amd64
+
+      - name: Build and push Bifrost Server
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.bifrost
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_SERVER }}:latest,${{ env.REGISTRY }}/${{ env.IMAGE_NAME_SERVER }}:${{ github.sha }}
+          platforms: linux/amd64

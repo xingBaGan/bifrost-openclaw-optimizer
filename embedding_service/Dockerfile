@@ -10,26 +10,27 @@ RUN pip install --no-cache-dir uv -i https://pypi.tuna.tsinghua.edu.cn/simple
 COPY pyproject.toml ./
 COPY uv.lock* ./
 COPY README.md ./
-# Need src to build the package properly
 COPY src/ ./src/
 
 # Install dependencies and the project itself
-# This populates .venv with everything needed
-RUN uv sync --frozen --no-dev
+# Explicitly avoid CUDA and clean up cache after install
+RUN uv sync --frozen --no-dev && \
+    uv cache clean
 
 # Final stage
 FROM python:3.12-slim
 
 WORKDIR /app
 
-# Copy virtual environment AND source files from builder
-# (Since uv sync default uses editable mode in development context, 
-#  we keep src to ensure the package remains functional)
+# Only copy necessary files from builder
+# We copy the virtualenv and the source code
 COPY --from=builder /app/.venv /app/.venv
 COPY --from=builder /app/src /app/src
 
 # Set environment variables
+# Ensure we use the virtualenv's Python
 ENV PATH="/app/.venv/bin:$PATH"
+ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV HF_ENDPOINT="https://hf-mirror.com"
 
