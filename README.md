@@ -1,25 +1,91 @@
-# Bifrost Gateway Roadmap
+# Bifrost OpenClaw Optimizer 🚀
 
-## Product Roadmap
+Bifrost 是一个专为 **OpenClaw** 设计的高性能网关与意图识别优化器。它通过内置的语义路由（Semantic Router）和极致瘦身的 Embedding 服务，实现了请求的精准分发与显著的成本缩减。
 
-### M0 (Now-1 week): Usable Baseline
-1. Bifrost multi-provider setup (OpenAI/OpenRouter/DeepSeek/Kimi)
-2. OpenClaw integration via Bifrost base URL
-3. Cost-tier routing rules (economy / quality / research)
-4. Basic observability (requests/models/cost logs)
+---
 
-### M1 (2-4 weeks): Cost Optimization and Reliability
-1. Rule-based model selection (by task type/context length/user tags)
-2. Fallback chains for provider/model failures
-3. Budgets and limits per user/project
-4. Stable model aliases (swap models without client changes)
+## ✨ 核心优势
+- **双库分发**：支持 **GitHub (GHCR)** 国际源与 **腾讯云 (CCR)** 国内极速源。
+- **语义路由**：内置智能意图识别，自动将请求分发至最合适的模型后端。
+- **白嫖级部署**：全程 GitHub Actions 自动编译，用户只需 `docker compose up`。
 
-### M2 (1-2 months): Personal Data and Audit
-1. Unified user call logs with summaries
-2. Personal notes/event ingestion for search
-3. Permissions and audit trail views
+---
 
-### M3 (2-4 months): Devices and Automation
-1. MCP integrations for tool/device actions
-2. Smart-home control (Home Assistant/MQTT/Matter)
-3. Triggers by time/location/events
+## 🚀 快速开始 (生产部署)
+
+这是最简单的安装方式，无需编译，直接拉取镜像并在 1 分钟内跑通。
+
+### 1. 准备环境
+确保你的服务器已安装 `Docker` 和 `Docker Compose`。
+
+### 2. 获取部署配置
+下载项目中的 `docker-compose.prod.yml` 并重命名为 `docker-compose.yml`：
+```bash
+wget https://github.com/xingBaGan/bifrost-openclaw-optimizer/raw/main/docker-compose.prod.yml -O docker-compose.yml
+```
+
+### 3. 配置网关 (`config.json`)
+在同级目录下创建 `config.json`（参考项目根目录的配置示例），配置你的各个模型提供商。
+
+### 4. 启动服务
+```bash
+docker compose up -d
+```
+> **提示**：如果国内 VPS 拉取速度慢，请确保 `docker-compose.yml` 中使用的是 `hkccr.ccs.tencentyun.com` 路径。
+
+---
+
+## 🛠️ 开发者指南 (本地构建)
+
+如果你想修改代码并进行本地构建：
+
+1. **安装依赖 (Python)**
+   本项目使用极速包管理工具 `uv`。
+   ```bash
+   cd embedding_service
+   uv sync
+   ```
+
+2. **本地镜像构建**
+   ```bash
+   docker compose up -d --build
+   ```
+
+3. **测试意图识别**
+   ```bash
+   # 测试 Embedding 服务健康状态
+   curl http://localhost:8001/health
+   ```
+
+---
+
+## 🏗️ 项目架构
+
+```text
+.
+├── bifrost (Go Gateway)          # 核心网关，负责请求分发与插件管理
+├── embedding_service (Python)    # 轻量级语义路由服务 (基于 Semantic Router)
+├── plugins                       # 自定义 Go 插件 (分类器/计费等)
+├── .github/workflows             # 自动化双规构建流水线
+└── docker-compose.prod.yml       # 生产部署专用配置
+```
+
+---
+
+## 🗺️ Roadmap
+
+### M0: 基础稳固
+- [x] 多供应商支持 (OpenAI/DeepSeek/Kimi)
+- [x] 与 OpenClaw 深度集成
+- [x] 初版意图识别路由 (Embedding Service)
+
+### M1: 性能与可靠性
+- [ ] 动态权重负载均衡
+- [ ] 熔断与自动降级机制
+- [ ] 成本限制与用户配额
+
+---
+
+## 📜 许可证
+
+开源于 MIT 协议。
