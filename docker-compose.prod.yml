@@ -10,12 +10,13 @@ services:
       - redis-data:/data
     networks:
       - bifrost-network
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
 
-  # Semantic Router Embedding Service (Pulls from GHCR bifrost-openclaw-optimizer)
+  # Embedding Service (Dual Image Choice)
   embedding-service:
-    image: ghcr.io/xingbagan/bifrost-openclaw-optimizer/bifrost-embedding:latest
+    # 方案 A: 腾讯云镜像 (国内 VPS 极速版本)
+    image: hkccr.ccs.tencentyun.com/bifrost_openclaw/bifrost-embedding:latest
+    # 方案 B: GitHub 镜像 (国际通用版本 - 取消下行注释即可切换)
+    # image: ghcr.io/xingbagan/bifrost-openclaw-optimizer/bifrost-embedding:latest
     container_name: bifrost-embedding
     restart: unless-stopped
     ports:
@@ -28,9 +29,12 @@ services:
     networks:
       - bifrost-network
 
-  # Bifrost Gateway (Pulls from GHCR bifrost-openclaw-optimizer)
+  # Bifrost Gateway (Dual Image Choice)
   bifrost:
-    image: ghcr.io/xingbagan/bifrost-openclaw-optimizer/bifrost-server:latest
+    # 方案 A: 腾讯云镜像 (国内 VPS 极速版本)
+    image: hkccr.ccs.tencentyun.com/bifrost_openclaw/bifrost-server:latest
+    # 方案 B: GitHub 镜像 (国际通用版本 - 取消下行注释即可切换)
+    # image: ghcr.io/xingbagan/bifrost-openclaw-optimizer/bifrost-server:latest
     container_name: bifrost
     restart: unless-stopped
     ports:

@@ -1,4 +1,4 @@
-name: Build and Push to GHCR
+name: Build and Push (GHCR & Tencent CCR)
 
 on:
   push:
@@ -6,11 +6,15 @@ on:
   workflow_dispatch:
 
 env:
-  REGISTRY: ghcr.io
-  # 镜像名必须全部小写，此处通过手动指定或 github 变量处理均可
-  # 为确保万无一失，直接写死全小写路径
-  IMAGE_NAME_EMBEDDING: xingbagan/bifrost-openclaw-optimizer/bifrost-embedding
-  IMAGE_NAME_SERVER: xingbagan/bifrost-openclaw-optimizer/bifrost-server
+  # Registry URLs
+  GHCR_REGISTRY: ghcr.io
+  TENCENT_REGISTRY: hkccr.ccs.tencentyun.com
+  
+  # Tencent Config (请在 GitHub Secrets 里配置 TENCENT_REGISTRY)
+  TENCENT_NAMESPACE: bifrost_openclaw
+  
+  # GitHub Config (自动获取小写名)
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   build-and-push:
@@ -23,19 +27,28 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Log in to the Container registry
+      - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: ${{ env.GHCR_REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log in to Tencent CCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.TENCENT_REGISTRY }}
+          username: ${{ secrets.TENCENT_USERNAME }}
+          password: ${{ secrets.TENCENT_PASSWORD }}
 
       - name: Build and push Embedding Service
         uses: docker/build-push-action@v5
         with:
           context: ./embedding_service
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_EMBEDDING }}:latest,${{ env.REGISTRY }}/${{ env.IMAGE_NAME_EMBEDDING }}:${{ github.sha }}
+          tags: |
+            ${{ env.GHCR_REGISTRY }}/xingbagan/bifrost-openclaw-optimizer/bifrost-embedding:latest
+            ${{ env.TENCENT_REGISTRY }}/${{ env.TENCENT_NAMESPACE }}/bifrost-embedding:latest
           platforms: linux/amd64
 
       - name: Build and push Bifrost Server
@@ -44,5 +57,7 @@ jobs:
           context: .
           file: ./Dockerfile.bifrost
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_SERVER }}:latest,${{ env.REGISTRY }}/${{ env.IMAGE_NAME_SERVER }}:${{ github.sha }}
+          tags: |
+            ${{ env.GHCR_REGISTRY }}/xingbagan/bifrost-openclaw-optimizer/bifrost-server:latest
+            ${{ env.TENCENT_REGISTRY }}/${{ env.TENCENT_NAMESPACE }}/bifrost-server:latest
           platforms: linux/amd64
