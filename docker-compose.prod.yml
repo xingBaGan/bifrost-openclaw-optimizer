@@ -21,11 +21,15 @@ services:
     restart: unless-stopped
     ports:
       - "8001:8001"
+    env_file:
+      - .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       - HF_ENDPOINT=https://hf-mirror.com
       - PYTHONUNBUFFERED=1
     healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8001/health', timeout=5)"]
+      test: [ "CMD", "python", "-c", "import requests; requests.get('http://localhost:8001/health', timeout=5)" ]
     networks:
       - bifrost-network
 
@@ -40,6 +44,10 @@ services:
     ports:
       - "8080:8080"
       - "8081:8081"
+    env_file:
+      - .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - ./data:/app/data
       - ./config.json:/app/config.json

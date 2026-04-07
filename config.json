@@ -44,7 +44,12 @@
         {
           "name": "openai-key-1",
           "value": "env.OPENAI_KEY",
-          "models": ["gpt-4o", "o1", "o3", "chatgpt-4o-latest"],
+          "models": [
+            "gpt-4o",
+            "o1",
+            "o3",
+            "chatgpt-4o-latest"
+          ],
           "weight": 1.0
         }
       ],
@@ -96,7 +101,10 @@
         {
           "name": "deepseek-key-1",
           "value": "env.DEEPSEEK_API_KEY",
-          "models": ["deepseek-chat", "deepseek-reasoner"],
+          "models": [
+            "deepseek-chat",
+            "deepseek-reasoner"
+          ],
           "weight": 1.0
         }
       ],
@@ -168,7 +176,11 @@
         "enabled": true,
         "cel_expression": "headers[\"x-modality\"] == \"text\" && headers[\"x-context-size\"] == \"large\"",
         "targets": [
-          { "provider": "kimi", "model": "kimi-k2.5", "weight": 1 }
+          {
+            "provider": "kimi",
+            "model": "kimi-k2.5",
+            "weight": 1
+          }
         ],
         "scope": "global",
         "priority": 1
@@ -176,13 +188,19 @@
       {
         "id": "rr-text-structured",
         "name": "text-structured-output",
-        "description": "Requires Tools/JSON -> OpenAI or Kimi",
+        "description": "Requires Tools/JSON -> Kimi (primary) or OpenAI (fallback)",
         "enabled": true,
         "cel_expression": "headers[\"x-modality\"] == \"text\" && (headers[\"x-has-tools\"] == \"true\" || headers[\"x-has-json-output\"] == \"true\")",
         "targets": [
-          { "provider": "openai", "model": "gpt-4o", "weight": 1 }
+          {
+            "provider": "kimi",
+            "model": "kimi-k2.5",
+            "weight": 1
+          }
         ],
-        "fallbacks": ["kimi/kimi-k2.5"],
+        "fallbacks": [
+          "openai/gpt-4o"
+        ],
         "scope": "global",
         "priority": 2
       },
@@ -193,9 +211,16 @@
         "enabled": true,
         "cel_expression": "headers[\"x-modality\"] == \"vision\" && headers[\"x-tier\"] == \"quality\" && headers[\"x-reasoning\"] == \"think\"",
         "targets": [
-          { "provider": "kimi", "model": "kimi-k2-thinking", "weight": 1 }
+          {
+            "provider": "kimi",
+            "model": "kimi-k2-thinking",
+            "weight": 1
+          }
         ],
-        "fallbacks": ["openai/o3", "openai/o1"],
+        "fallbacks": [
+          "openai/o3",
+          "openai/o1"
+        ],
         "scope": "global",
         "priority": 10
       },
@@ -206,9 +231,16 @@
         "enabled": true,
         "cel_expression": "headers[\"x-modality\"] == \"vision\" && headers[\"x-tier\"] == \"quality\" && headers[\"x-reasoning\"] == \"fast\"",
         "targets": [
-          { "provider": "kimi", "model": "kimi-k2.5", "weight": 1 }
+          {
+            "provider": "kimi",
+            "model": "kimi-k2.5",
+            "weight": 1
+          }
         ],
-        "fallbacks": ["openai/o3", "openai/o1"],
+        "fallbacks": [
+          "openai/o3",
+          "openai/o1"
+        ],
         "scope": "global",
         "priority": 11
       },
@@ -219,9 +251,15 @@
         "enabled": true,
         "cel_expression": "headers[\"x-modality\"] == \"vision\" && headers[\"x-tier\"] == \"research\"",
         "targets": [
-          { "provider": "openrouter", "model": "x-ai/grok-4.20", "weight": 1 }
+          {
+            "provider": "openrouter",
+            "model": "x-ai/grok-4.20",
+            "weight": 1
+          }
         ],
-        "fallbacks": ["openrouter/anthropic/claude-3.5-sonnet"],
+        "fallbacks": [
+          "openrouter/anthropic/claude-3.5-sonnet"
+        ],
         "scope": "global",
         "priority": 12
       },
@@ -232,9 +270,16 @@
         "enabled": true,
         "cel_expression": "headers[\"x-modality\"] == \"vision\" && headers[\"x-tier\"] == \"economy\"",
         "targets": [
-          { "provider": "kimi", "model": "kimi-k2.5", "weight": 1 }
+          {
+            "provider": "kimi",
+            "model": "kimi-k2.5",
+            "weight": 1
+          }
         ],
-        "fallbacks": ["openai/o3", "openai/o1"],
+        "fallbacks": [
+          "openai/o3",
+          "openai/o1"
+        ],
         "scope": "global",
         "priority": 13
       },
@@ -245,7 +290,11 @@
         "enabled": true,
         "cel_expression": "headers[\"x-modality\"] == \"text\" && headers[\"x-tier\"] == \"economy\" && headers[\"x-reasoning\"] == \"fast\"",
         "targets": [
-          { "provider": "deepseek", "model": "deepseek-chat", "weight": 1 }
+          {
+            "provider": "deepseek",
+            "model": "deepseek-chat",
+            "weight": 1
+          }
         ],
         "scope": "global",
         "priority": 20
@@ -257,7 +306,11 @@
         "enabled": true,
         "cel_expression": "headers[\"x-modality\"] == \"text\" && headers[\"x-tier\"] == \"economy\" && headers[\"x-reasoning\"] == \"think\"",
         "targets": [
-          { "provider": "deepseek", "model": "deepseek-reasoner", "weight": 1 }
+          {
+            "provider": "deepseek",
+            "model": "deepseek-reasoner",
+            "weight": 1
+          }
         ],
         "scope": "global",
         "priority": 21
@@ -269,9 +322,16 @@
         "enabled": true,
         "cel_expression": "headers[\"x-modality\"] == \"text\" && headers[\"x-tier\"] == \"quality\" && headers[\"x-reasoning\"] == \"fast\"",
         "targets": [
-          { "provider": "kimi", "model": "kimi-k2.5", "weight": 1 }
+          {
+            "provider": "kimi",
+            "model": "kimi-k2.5",
+            "weight": 1
+          }
         ],
-        "fallbacks": ["openai/o3", "openai/o1"],
+        "fallbacks": [
+          "openai/o3",
+          "openai/o1"
+        ],
         "scope": "global",
         "priority": 22
       },
@@ -282,9 +342,16 @@
         "enabled": true,
         "cel_expression": "headers[\"x-modality\"] == \"text\" && headers[\"x-tier\"] == \"quality\" && headers[\"x-reasoning\"] == \"think\"",
         "targets": [
-          { "provider": "kimi", "model": "kimi-k2-thinking", "weight": 1 }
+          {
+            "provider": "kimi",
+            "model": "kimi-k2-thinking",
+            "weight": 1
+          }
         ],
-        "fallbacks": ["openai/o3", "openai/o1"],
+        "fallbacks": [
+          "openai/o3",
+          "openai/o1"
+        ],
         "scope": "global",
         "priority": 23
       },
@@ -295,7 +362,11 @@
         "enabled": true,
         "cel_expression": "headers[\"x-modality\"] == \"text\" && headers[\"x-tier\"] == \"research\" && headers[\"x-reasoning\"] == \"think\"",
         "targets": [
-          { "provider": "openrouter", "model": "x-ai/grok-4.20", "weight": 1 }
+          {
+            "provider": "openrouter",
+            "model": "x-ai/grok-4.20",
+            "weight": 1
+          }
         ],
         "fallbacks": [
           "openrouter/anthropic/claude-3.5-sonnet",
@@ -311,7 +382,11 @@
         "enabled": true,
         "cel_expression": "headers[\"x-modality\"] == \"text\" && headers[\"x-tier\"] == \"research\" && headers[\"x-reasoning\"] == \"fast\"",
         "targets": [
-          { "provider": "openrouter", "model": "x-ai/grok-4.20", "weight": 1 }
+          {
+            "provider": "openrouter",
+            "model": "x-ai/grok-4.20",
+            "weight": 1
+          }
         ],
         "fallbacks": [
           "openrouter/anthropic/claude-3.5-sonnet",
