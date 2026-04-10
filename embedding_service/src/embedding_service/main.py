@@ -73,17 +73,72 @@ ROUTES = [
             "refactor the module", "refactor authentication", "refactor this code",
             "optimize performance", "improve efficiency", "reduce latency",
             "design pattern", "code review", "best practices",
-            "scalability", "maintainability", "trade-offs",
-            "compare approaches", "which is better", "pros and cons",
+            "scalability", "maintainability",
             # 中文 - 架构/优化
             "重构架构", "重新设计", "改进架构",
             "重构模块", "重构认证", "重构代码",
             "优化性能", "提升效率", "降低延迟",
             "设计模式", "代码审查", "最佳实践",
-            "可扩展性", "可维护性", "权衡分析",
-            "对比方案", "哪个更好", "优缺点",
+            "可扩展性", "可维护性",
         ],
         metadata={"tier": "quality", "reasoning": "think", "task_type": "code_complex", "modality": "text"}
+    ),
+    Route(
+        name="system_design",
+        utterances=[
+            # Design from scratch
+            "design a system", "design this service", "how to design a",
+            "design a URL shortener", "design a chat system", "design a notification service",
+            "design a distributed system", "design a microservice",
+            "system design for", "architecture design for",
+            # Architecture decisions
+            "microservices vs monolith", "monolith or microservices",
+            "choose an architecture", "which architecture should I use",
+            "event-driven vs request-driven", "REST vs GraphQL vs gRPC",
+            "write an ADR", "architecture decision record",
+            # Technology selection
+            "which database should I use", "SQL vs NoSQL", "choose a database",
+            "which message queue", "Kafka vs RabbitMQ", "Redis vs Memcached",
+            "which framework to use", "technology stack selection",
+            # Distributed systems tradeoffs
+            "CAP theorem", "consistency vs availability", "latency vs throughput",
+            "strong consistency vs eventual consistency",
+            "design for high availability", "design for scalability",
+            "fault tolerance design", "design for resilience",
+            # 中文 - 系统设计
+            "系统设计", "架构设计", "设计一个系统",
+            "设计这个服务", "怎么设计", "如何设计一个",
+            "微服务还是单体", "选哪种架构", "技术选型",
+            "选什么数据库", "用哪个消息队列", "技术栈怎么选",
+            "CAP理论", "一致性和可用性", "延迟和吞吐量",
+            "高可用设计", "可扩展性设计", "容错设计",
+            "写ADR", "架构决策记录",
+        ],
+        metadata={"tier": "quality", "reasoning": "think", "task_type": "system_design", "modality": "text"}
+    ),
+    Route(
+        name="code_understand",
+        utterances=[
+            # Read and explain
+            "what does this code do", "explain this code", "explain this function",
+            "what is this doing", "what does this function do", "read this code",
+            "explain this class", "what does this method do", "explain this snippet",
+            "walk me through this code", "help me understand this code",
+            "what does this mean", "break down this code", "summarize this code",
+            # Trace / follow logic
+            "trace through this", "follow the logic", "trace the execution",
+            "what happens when", "what is the flow", "how does the code flow",
+            # Legacy / unfamiliar code
+            "explain this legacy code", "help me read this", "make sense of this code",
+            "I don't understand this code", "what is this code supposed to do",
+            # 中文 - 读代码/理解代码
+            "这段代码是干什么的", "帮我看看这段代码", "解释这个函数",
+            "这个函数是什么意思", "这段逻辑是什么", "帮我理解这段代码",
+            "梳理一下代码逻辑", "这段代码做了什么", "解释这个类",
+            "这个方法是干嘛的", "帮我读一下这段代码", "这代码什么意思",
+            "追踪代码执行流程", "代码流程是什么", "这里发生了什么",
+        ],
+        metadata={"tier": "quality", "reasoning": "fast", "task_type": "code_understand", "modality": "text"}
     ),
     Route(
         name="reasoning",
@@ -97,7 +152,7 @@ ROUTES = [
 
             # 解释原因类
             "explain why", "why does", "what causes", "reason behind",
-            "how does this work", "what's the reasoning", "explain the logic",
+            "what's the reasoning", "explain the logic",
             "explain in detail", "elaborate on", "clarify the reason",
             "解释为什么", "为什么会", "什么原因导致", "原因是什么",
             "详细解释", "解释一下原理", "说明原因", "阐述原因",
@@ -125,9 +180,11 @@ ROUTES = [
             "计算复杂度", "分析算法的复杂度",
 
             # 比较分析类
-            "compare and contrast", "analyze the difference", "comparoaches",
+            "compare and contrast", "analyze the difference", "compare approaches",
             "analyze trade-offs", "which approach is better and why",
+            "trade-offs", "which is better", "pros and cons",
             "对比分析", "比较分析", "分析差异", "权衡分析",
+            "对比方案", "哪个更好", "优缺点",
 
             # 根因分析类
             "root cause", "underlying reason", "fundamental reason",
@@ -174,9 +231,104 @@ ROUTES = [
             # 前沿类
             "cutting-edge", "frontier research", "emerging research",
             "breakthrough research", "innovative research",
-     "前沿研究", "突破性研究", "创新性研究", "新兴研究",
+            "突破性研究", "创新性研究", "新兴研究",
         ],
         metadata={"tier": "research", "reasoning": "think", "task_type": "research", "modality": "text"}
+    ),
+    Route(
+        name="writing",
+        utterances=[
+            # Technical docs
+            "write a README", "write documentation", "write technical docs",
+            "generate API docs", "document this code", "add comments",
+            "write docstring", "generate docstrings", "add inline comments",
+            # Design / planning docs
+            "write a design doc", "write an RFC", "draft a technical proposal",
+            "write a PRD", "write product requirements", "write a spec",
+            # Commit / changelog
+            "write a commit message", "generate commit message",
+            "write a changelog", "write release notes",
+            # Communication
+            "write a technical email", "write a pull request description",
+            "summarize this PR", "write PR description",
+            # 中文 - 技术写作
+            "写README", "写文档", "写技术文档",
+            "写注释", "生成docstring", "补充注释",
+            "写设计文档", "写技术方案", "写需求文档",
+            "写commit信息", "写changelog", "写发布说明",
+            "写技术邮件", "写PR描述", "总结这个PR",
+        ],
+        metadata={"tier": "quality", "reasoning": "fast", "task_type": "writing", "modality": "text"}
+    ),
+    Route(
+        name="diagram",
+        utterances=[
+            # Architecture / system diagrams
+            "draw an architecture diagram", "create a system diagram", "diagram this architecture",
+            "visualize this system", "draw a component diagram", "create a system design diagram",
+            # Flow / sequence
+            "create a flowchart", "draw a flowchart", "draw a sequence diagram",
+            "create a sequence diagram", "draw a state machine", "diagram this flow",
+            # Data / class
+            "generate a UML diagram", "create an ER diagram", "draw a class diagram",
+            "create an entity relationship diagram", "draw a data model",
+            # Tools
+            "create a Mermaid diagram", "write Mermaid code", "draw with PlantUML",
+            "generate PlantUML", "create an ASCII diagram",
+            # 中文 - 画图
+            "画架构图", "画系统架构图", "画组件图",
+            "画流程图", "画时序图", "画状态机",
+            "画ER图", "画类图", "画数据模型",
+            "用Mermaid画图", "生成Mermaid", "画UML图",
+        ],
+        metadata={"tier": "quality", "reasoning": "fast", "task_type": "diagram", "modality": "text"}
+    ),
+    Route(
+        name="planning",
+        utterances=[
+            # Task breakdown
+            "break down this task", "break this into subtasks", "decompose this feature",
+            "create a task list", "list the steps to build", "outline implementation steps",
+            # Project / sprint planning
+            "create a project plan", "write a roadmap", "create a technical roadmap",
+            "plan this sprint", "create a sprint plan", "plan this feature",
+            # Estimation
+            "estimate effort", "estimate story points", "how long will this take",
+            "estimate the work", "estimate complexity", "size this task",
+            # Prioritization
+            "prioritize these tasks", "help me prioritize", "what should I do first",
+            "define milestones", "create a delivery plan",
+            # 中文 - 规划
+            "拆解任务", "拆分子任务", "任务分解",
+            "制定计划", "制定路线图", "写技术路线",
+            "规划这个功能", "规划这个项目", "制定迭代计划",
+            "估算工作量", "估算复杂度", "这个要做多久",
+            "任务优先级", "帮我排优先级", "定里程碑",
+        ],
+        metadata={"tier": "quality", "reasoning": "think", "task_type": "planning", "modality": "text"}
+    ),
+    Route(
+        name="brainstorm",
+        utterances=[
+            # Ideation
+            "brainstorm ideas", "generate ideas for", "think of ideas",
+            "come up with ideas", "suggest approaches", "what are some ways to",
+            "explore possibilities", "think creatively about", "ideate on",
+            # Divergent / what-if
+            "what if we", "what if I", "explore what if",
+            "think outside the box", "unconventional approaches", "alternative solutions",
+            "explore different angles", "challenge assumptions",
+            # Open exploration
+            "help me think through", "let's think about", "explore this idea",
+            "what could go wrong", "what are the possibilities",
+            # 中文 - 发散/构思
+            "头脑风暴", "发散思维", "想想有什么方案",
+            "探索思路", "构思想法", "有什么创意",
+            "帮我想想", "想象一下", "有什么可能性",
+            "如果我们", "换个角度想", "从另一个角度",
+            "有什么风险", "还有什么可能", "探索一下这个想法",
+        ],
+        metadata={"tier": "quality", "reasoning": "think", "task_type": "brainstorm", "modality": "text"}
     ),
 ]
 
